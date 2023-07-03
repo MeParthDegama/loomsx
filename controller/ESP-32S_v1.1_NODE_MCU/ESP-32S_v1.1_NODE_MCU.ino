@@ -1,4 +1,5 @@
 /*
+
   Board: ESP32 Dev Module
 
   Linux Troubleshoot:
@@ -11,6 +12,8 @@
 #define SIGNAL_PIN 4
 #define STOP_LED 16
 #define PLUSE_LED 5
+
+#define OFF_TIME_DELAY 2000
 
 void setup() {
   
@@ -26,31 +29,53 @@ void setup() {
 
 }
 
-_Bool preSignal = LOW;
+struct timeval tv;
 
-int counter = 0;
+int sutter_counter = 0;
+_Bool pre_signal = LOW;
+uint64_t prev_time = 0;
+
+_Bool pre_mstatus = false;
 
 void loop() {
 
-  _Bool curSignal = !digitalRead(SIGNAL_PIN);
-  digitalWrite(PLUSE_LED, curSignal);
+	gettimeofday(&tv, NULL);
+	uint64_t curr_time = tv.tv_sec * 1000LL + (tv.tv_usec / 1000LL);
 
-  if (curSignal != preSignal) {
+  _Bool cur_signal = !digitalRead(SIGNAL_PIN);
+  //digitalWrite(PLUSE_LED, cur_signal);
+
+  if (cur_signal != pre_signal) {
   
-    if (curSignal == HIGH) {
+    if (cur_signal == HIGH) {
 
-      Serial.printf("On: %d\n", ++counter);
+      if (!pre_mstatus) {
+        digitalWrite(STOP_LED, LOW);
+      }
+
+    	prev_time = curr_time;
+      Serial.printf("Count: %d\n", ++sutter_counter);
+
+      pre_mstatus = true;
     
     }
   
   }
 
-  preSignal = curSignal;
+  if ((curr_time - prev_time) > OFF_TIME_DELAY) {
 
- /*  
-  struct timeval tv;
-	gettimeofday(&tv, NULL);
-	Serial.println(tv.tv_sec * 1000LL + (tv.tv_usec / 1000LL));
- */
+    if (pre_mstatus) {
+      
+      digitalWrite(STOP_LED, HIGH);
+      sutter_counter = 0;
+
+      pre_mstatus = false;
+    
+    }
+
+  }
+  
+
+  pre_signal = cur_signal;
 
 }
