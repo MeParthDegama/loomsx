@@ -8,10 +8,10 @@
 
 */
 
-#define POWER_LED  17
+#define POWER_LED  18
 #define SIGNAL_PIN 4
-#define STOP_LED 16
-#define PLUSE_LED 5
+#define STOP_LED 19
+#define PLUSE_LED 21
 
 #define OFF_TIME_DELAY 2000
 
